@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
+    private static final int JS_ID = 943292346;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "JobScheduler not running");
 
             ComponentName componentName = new ComponentName(this, ExampleJobService.class);
-            JobInfo info = new JobInfo.Builder(123, componentName)
+            JobInfo info = new JobInfo.Builder(JS_ID, componentName)
                     .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
                     .setPersisted(true)
                     .setPeriodic(15 * 60 * 1000)
@@ -63,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
     public void cancelJob(View v){
         JobScheduler scheduler = (JobScheduler) getSystemService(JOB_SCHEDULER_SERVICE);
         assert scheduler != null;
-        scheduler.cancel(123);
+        scheduler.cancel(JS_ID);
         Log.d(TAG, "Job canceled");
     }
 
@@ -73,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
         boolean hasBeenScheduled = false ;
 
         for ( JobInfo jobInfo : scheduler.getAllPendingJobs() ) {
-            if ( jobInfo.getId() == 123 ) {
+            if ( jobInfo.getId() == JS_ID ) {
                 hasBeenScheduled = true ;
                 break ;
             }
