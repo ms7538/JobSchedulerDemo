@@ -2,8 +2,8 @@ package com.poloapps.workmanagerdemo;
 
 import android.app.job.JobInfo;
 import android.app.job.JobScheduler;
-import android.app.job.JobService;
 import android.content.ComponentName;
+import android.content.Context;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -24,8 +24,6 @@ public class MainActivity extends AppCompatActivity {
         Start.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(getApplicationContext(), "Start Clicked",
-                        Toast.LENGTH_SHORT).show();
                 scheduleJob(v);
             }
         });
@@ -39,29 +37,47 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
-    public void scheduleJob(View v){
-        ComponentName componentName = new ComponentName(this, ExampleJobService.class);
-        JobInfo info = new JobInfo.Builder(123, componentName)
-                .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-                .setPersisted(true)
-                .setPeriodic(15 * 60 * 1000)
-                .build();
+    public void scheduleJob(View v) {
 
-        JobScheduler scheduler = (JobScheduler) getSystemService(JOB_SCHEDULER_SERVICE);
-        assert scheduler != null;
-        int resultCode = scheduler.schedule(info);
-        if (resultCode == JobScheduler.RESULT_SUCCESS){
-            Log.d(TAG, "Job scheduled");
-        } else {
-            Log.d(TAG, "Job scheduling failed");
-        }
+        if (!isJobServiceOn(getApplicationContext())) {
+            Log.d(TAG, "JobScheduler not running");
 
+            ComponentName componentName = new ComponentName(this, ExampleJobService.class);
+            JobInfo info = new JobInfo.Builder(123, componentName)
+                    .setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+                    .setPersisted(true)
+                    .setPeriodic(15 * 60 * 1000)
+                    .build();
+
+            JobScheduler scheduler = (JobScheduler) getSystemService(JOB_SCHEDULER_SERVICE);
+            assert scheduler != null;
+            int resultCode = scheduler.schedule(info);
+            if (resultCode == JobScheduler.RESULT_SUCCESS) {
+                Log.d(TAG, "Job scheduled");
+            } else {
+                Log.d(TAG, "Job scheduling failed");
+            }
+
+        } else Log.d(TAG, "JobScheduler is already running");
     }
-
     public void cancelJob(View v){
         JobScheduler scheduler = (JobScheduler) getSystemService(JOB_SCHEDULER_SERVICE);
         assert scheduler != null;
         scheduler.cancel(123);
         Log.d(TAG, "Job canceled");
+    }
+
+    public static boolean isJobServiceOn( Context context ) {
+        JobScheduler scheduler = (JobScheduler) context.getSystemService(
+                Context.JOB_SCHEDULER_SERVICE ) ;
+        boolean hasBeenScheduled = false ;
+
+        for ( JobInfo jobInfo : scheduler.getAllPendingJobs() ) {
+            if ( jobInfo.getId() == 123 ) {
+                hasBeenScheduled = true ;
+                break ;
+            }
+        }
+        return hasBeenScheduled ;
     }
 }
